@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    /* Cyberpunk Form Styles */
+    .cyber-input {
+        width: 100%;
+        background: rgba(219, 255, 224, 0.5);
+        border: 1px solid rgba(0, 210, 255, 0.3);
+        color: var(--neon-primary);
+        font-family: 'Share Tech Mono', monospace;
+        padding: 12px 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+        box-sizing: border-box;
+    }
+    .cyber-input:focus {
+        outline: none;
+        border-color: var(--neon-primary);
+        box-shadow: 0 0 15px rgba(0, 250, 154, 0.2), inset 0 0 10px rgba(0, 250, 154, 0.1);
+    }
+    .cyber-input::placeholder { color: rgba(255, 255, 255, 0.2); }
+    .cyber-label {
+        display: block;
+        font-family: 'Orbitron';
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+
+    /* Advanced Terminal Overlay Styles */
+    #authOverlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(219, 255, 224, 0.5); z-index: 9999; justify-content: center; align-items: center;
+        backdrop-filter: blur(8px);
+    }
+    .terminal-box {
+        background: rgba(219, 255, 224, 0.5); border: 1px solid var(--neon-secondary); border-left: 4px solid var(--neon-primary);
+        padding: 40px; width: 90%; max-width: 500px; box-shadow: 0 0 40px rgba(0, 210, 255, 0.1);
+        font-family: 'Share Tech Mono', monospace; text-align: left;
+    }
+    .progress-container {
+        width: 100%; height: 8px; background: rgba(255,255,255,0.1); margin: 20px 0; border-radius: 4px; overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%; width: 0%; background: var(--neon-primary);
+        box-shadow: 0 0 10px var(--neon-primary); transition: width 0.2s ease;
+    }
+    .terminal-log {
+        color: var(--neon-secondary); font-size: 0.9rem; margin-top: 10px; min-height: 20px;
+    }
+    .blink-cursor { animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+    <div>
+        <h2 class="page-title" style="font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 5px;">ROUTING DATA</h2>
+        <p class="hud-text" style="color: var(--text-muted);">
+            <i class="fas fa-shield-alt" style="color: var(--neon-primary); font-size: 0.8rem; vertical-align: middle;"></i> ENCRYPTED UPLINK
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('view_cart') }}" class="btn-secondary" style="font-family: 'Share Tech Mono'; font-size: 1rem; padding: 10px 20px;">
+            <i class="fas fa-undo"></i> Return to Payload
+        </a>
+    </div>
+</div>
+
+<div class="card" style="border-top: 3px solid var(--neon-primary); box-shadow: 0 0 30px rgba(0, 250, 154, 0.05); padding: 40px; background: rgba(219, 255, 224, 0.5); max-width: 800px; margin: 0 auto;">
+    
+    <form id="checkoutForm" action="{{ url_for('process_checkout') }}" method="POST">
+        
+        <h3 style="font-family: 'Orbitron'; color: rgb(21, 21, 21); margin-bottom: 25px; font-size: 1.3rem;">
+            <i class="fas fa-map-marker-alt" style="color: var(--neon-primary);"></i> TRANSMISSION COORDINATES
+        </h3>
+
+        <label class="cyber-label">OPERATIVE ID (FULL NAME)</label>
+        <input type="text" name="full_name" class="cyber-input" placeholder="Enter designation..." required value="{{ current_user.username }}">
+
+        <label class="cyber-label">COMM-LINK (PHONE)</label>
+        <input type="tel" name="phone" class="cyber-input" placeholder="+91 XXXX XXXXXX" required value="{{ current_user.contact_info }}">
+
+        <label class="cyber-label">DROP COORDINATES (DELIVERY ADDRESS)</label>
+        <textarea name="address" class="cyber-input" rows="4" placeholder="Sector, Block, Physical Address..." required id="addressField"></textarea>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px; margin-bottom: 25px;">
+                <span style="font-family: 'Orbitron'; font-weight: bold; color: rgb(0, 0, 0); font-size: 1.1rem;">TOTAL DEDUCTION</span>
+                <span style="font-family: 'Share Tech Mono'; font-size: 2.2rem; color: var(--neon-primary); font-weight: bold; text-shadow: 0 0 15px rgba(0,250,154,0.3);">₹{{ total+6 }}</span>
+            </div>
+            
+            <button type="button" onclick="authorizeTransfer()" class="btn-primary" style="font-family: 'Orbitron'; font-size: 1.2rem; padding: 15px; text-align: center; width: 100%; border: none; cursor: pointer;" id="authBtn">
+                <i class="fas fa-satellite-dish" style="margin-right: 8px;"></i> AUTHORIZE TRANSFER
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="authOverlay">
+    <div class="terminal-box">
+        <h3 style="font-family: 'Orbitron'; color: rgb(3, 53, 7); margin-bottom: 10px; font-size: 1.4rem; letter-spacing: 2px;">
+            <i class="fas fa-lock" style="color: var(--neon-primary);"></i> SECURE UPLINK ESTABLISHED
+        </h3>
+        <div style="font-size: 0.8rem; color: #666; margin-bottom: 20px;">CONNECTION ID: <span id="connId">0x000000</span></div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="authProgress"></div>
+        </div>
+        
+        <div class="terminal-log" id="terminalLog">> Waiting for input...<span class="blink-cursor">_</span></div>
+    </div>
+</div>
+
+<script>
+    function authorizeTransfer() {
+        const form = document.getElementById('checkoutForm');
+        const address = document.getElementById('addressField').value;
+        const btn = document.getElementById('authBtn');
+        
+        // Basic HTML5 validation trigger before starting the cool animation
+        if(!form.checkValidity() || address.trim() === "") {
+            form.reportValidity();
+            return;
+        }
+
+        // Disable button to prevent double clicks
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> INITIATING...';
+
+        // Show the terminal overlay
+        const overlay = document.getElementById('authOverlay');
+        const log = document.getElementById('terminalLog');
+        const progress = document.getElementById('authProgress');
+        const connId = document.getElementById('connId');
+        
+        overlay.style.display = 'flex';
+        
+        // Generate fake hex connection ID
+        connId.innerText = '0x' + Math.floor(Math.random()*16777215).toString(16).toUpperCase().padStart(6, '0');
+
+        // Sequence of terminal messages and progress updates
+        const sequence = [
+            { time: 200, progress: 15, msg: "> Encrypting packet payload..." },
+            { time: 800, progress: 35, msg: "> Verifying Operative ID and Credit matrix..." },
+            { time: 1500, progress: 60, msg: "> Locking drop coordinates..." },
+            { time: 2200, progress: 85, msg: "> Allocating automated delivery drones..." },
+            { time: 2800, progress: 100, msg: "> TRANSFER AUTHORIZED. Executing order..." }
+        ];
+
+        sequence.forEach(step => {
+            setTimeout(() => {
+                progress.style.width = step.progress + '%';
+                log.innerHTML = step.msg + '<span class="blink-cursor">_</span>';
+                
+                // If it's the final step, submit the form to the Flask backend
+                if(step.progress === 100) {
+                    setTimeout(() => {
+                        form.submit();
+                    }, 600); // Wait just over half a second for the user to read "AUTHORIZED"
+                }
+            }, step.time);
+        });
+    }
+</script>
+{% endblock %}

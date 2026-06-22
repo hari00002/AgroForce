@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px;">
+    <div>
+        <h2 class="page-title" style="font-size: 2rem; font-weight: 700; color: #1e3a8a; margin-bottom: 8px; letter-spacing: -0.5px;">Order Confirmed</h2>
+        <p style="color: #10b981; font-weight: 500; font-size: 0.95rem;">
+            <i class="fas fa-check-circle" style="margin-right: 6px;"></i> Transaction Successful
+        </p>
+    </div>
+</div>
+
+<div class="card" style="background: #ffffff; border: 1px solid #bfdbfe; border-top: 4px solid #10b981; box-shadow: 0 10px 25px rgba(30, 58, 138, 0.08); padding: 48px 32px; text-align: center; max-width: 800px; margin: 0 auto; border-radius: 12px;">
+    
+    <div style="margin-bottom: 24px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: #d1fae5; border-radius: 50%; color: #10b981;">
+            <i class="fas fa-check" style="font-size: 2.5rem;"></i>
+        </div>
+    </div>
+    
+    <h3 style="font-size: 1.75rem; font-weight: 600; color: #1e3a8a; margin-bottom: 16px;">Order Transmitted Successfully</h3>
+    
+    <p style="font-size: 1rem; color: #3b82f6; max-width: 500px; margin: 0 auto 32px; line-height: 1.6;">
+        Your requisition order has been successfully logged into our system. Our logistics team is currently processing your request for delivery.
+    </p>
+
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 24px; max-width: 480px; margin: 0 auto 40px; text-align: left;">
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #bfdbfe; padding-bottom: 12px;">
+            <span style="color: #3b82f6; font-size: 0.9rem; font-weight: 600;">Order ID:</span>
+            <span style="color: #1e3a8a; font-weight: 700; font-family: monospace; font-size: 1.05rem;">#ORD-{{ order_id }}</span>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid #bfdbfe; padding-bottom: 12px;">
+            <span style="color: #3b82f6; font-size: 0.9rem; font-weight: 600;">Status:</span>
+            <span class="status-badge" style="background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">Processing</span>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between;">
+            <span style="color: #3b82f6; font-size: 0.9rem; font-weight: 600;">Estimated Delivery:</span>
+            <span style="color: #1e3a8a; font-weight: 700;">Within 7 days</span>
+        </div>
+        
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <a href="{{ url_for('my_orders') }}" class="btn-primary" style="background: #2563eb; color: #ffffff; border: none; padding: 12px 24px; min-width: 180px; border-radius: 6px; font-weight: 600; text-decoration: none; text-align: center; transition: 0.2s;">
+            Track Order
+        </a>
+        
+        <a href="{{ url_for('shop') }}" class="btn-secondary" style="background: #dbeafe; color: #2563eb; border: none; padding: 12px 24px; min-width: 180px; border-radius: 6px; font-weight: 600; text-decoration: none; text-align: center; transition: 0.2s;">
+            Return to Shop
+        </a>
+    </div>
+
+</div>
+{% endblock %}

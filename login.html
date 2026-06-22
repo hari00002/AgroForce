@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <center>
+    <div class="card auth-card" style="width: 450px;">
+        <h2>Login</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" required placeholder="Enter your email" class="tab">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="Enter password" class="tab">
+            </div>
+            <center>
+            <button type="submit" class="btn-primary" style="width: 150px; color:white;font-size:20px;">Login</button>
+            </center>
+        </form>
+        <p class="auth-footer">Don't have an account? <br><a href="{{ url_for('register') }}" class="btn-primary" style="background-color: rgba(220, 20, 60, 0.663);">Sign Up</a></p>
+    </div>
+    </center>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 40px 30px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="width: 64px; height: 64px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                <i class="fas fa-motorcycle" style="color: var(--primary); font-size: 1.8rem;"></i>
+            </div>
+            <h2 style="font-weight: 700; color: var(--text-main); font-size: 1.5rem;">Courier Portal</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Sign in to view your regional dispatches.</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label>Official Delivery ID</label>
+                <input type="text" name="delivery_id" required placeholder="e.g. DLV-001" style="font-family: 'Inter', monospace;">
+            </div>
+            <div class="form-group">
+                <label>Passcode</label>
+                <input type="password" name="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-primary full-width" style="padding: 12px; margin-top: 10px; font-size: 1rem;">Access Terminal</button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
+            <span style="color: var(--text-muted);">Not an operative?</span> 
+            <a href="{{ url_for('courier_register') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Register Here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

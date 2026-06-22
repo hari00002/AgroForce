@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <h2 class="page-title" style="font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 5px;">MAIN OVERSEER TERMINAL</h2>
+    <p class="hud-text" style="color: var(--neon-secondary);"><i class="fas fa-shield-alt"></i> SYSTEM ADMINISTRATION CLEARANCE</p>
+</div>
+
+<div class="stats-grid">
+    <div class="card stat-card" style="border-top: 3px solid var(--neon-primary);">
+        <h3 style="color: var(--neon-primary);">{{ users|length }}</h3>
+        <p style="font-family: 'Share Tech Mono'; color: #888;">Registered Nodes</p>
+    </div>
+    <div class="card stat-card" style="border-top: 3px solid var(--neon-secondary);">
+        <h3 style="color: var(--neon-secondary);">{{ equipments|length }}</h3>
+        <p style="font-family: 'Share Tech Mono'; color: #888;">Hardware Fleet</p>
+    </div>
+    <div class="card stat-card" style="border-top: 3px solid var(--warning);">
+        <h3 style="color: var(--warning);">{{ bookings|length }}</h3>
+        <p style="font-family: 'Share Tech Mono'; color: #888;">Active Contracts</p>
+    </div>
+    <div class="card stat-card" style="border-top: 3px solid #00d2ff;">
+        <h3 style="color: #00d2ff;">₹{{ total_revenue }}</h3>
+        <p style="font-family: 'Share Tech Mono'; color: #888;">Platform Volume</p>
+    </div>
+</div>
+
+<div class="dashboard-container mt-4">
+    <div class="card" style="width: 100%; border-top: 3px solid rgba(255,255,255,0.2);">
+        <h3 style="font-family: 'Orbitron'; color: white; margin-bottom: 15px;"><i class="fas fa-chart-line"></i> Platform Activity</h3>
+        <canvas id="adminChart" height="80"></canvas>
+    </div>
+</div>
+
+<div class="card mt-4" style="border-top: 3px solid var(--danger);">
+    <h3 style="font-family: 'Orbitron'; color: white; margin-bottom: 15px;"><i class="fas fa-headset" style="color: var(--danger);"></i> Support Transmissions & Feedback</h3>
+    <div class="table-responsive">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px dashed rgba(255,255,255,0.2); font-family: 'Orbitron'; color: #888;">
+                    <th style="padding: 10px;">ID</th>
+                    <th style="padding: 10px;">User</th>
+                    <th style="padding: 10px;">Category</th>
+                    <th style="padding: 10px;">Subject & Report</th>
+                    <th style="padding: 10px;">Status</th>
+                    <th style="padding: 10px;">Directives</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 15px 10px; font-family: 'Share Tech Mono'; color: white;">#TKT-{{ ticket.id }}</td>
+                    <td style="padding: 15px 10px; font-family: 'Share Tech Mono'; color: #ccc;">
+                        {{ ticket.user.username }}<br>
+                        <span style="font-size: 0.75rem; color: var(--neon-secondary);">{{ ticket.user.email }}</span>
+                    </td>
+                    <td style="padding: 15px 10px; font-family: 'Share Tech Mono'; color: #aaa;">{{ ticket.category }}</td>
+                    <td style="padding: 15px 10px;">
+                        <strong style="color: white; font-family: 'Orbitron'; font-size: 0.9rem;">{{ ticket.subject }}</strong><br>
+                        <span style="font-family: 'Share Tech Mono'; color: #888; font-size: 0.85rem; display: block; max-width: 300px; word-wrap: break-word;">{{ ticket.description }}</span>
+                    </td>
+                    <td style="padding: 15px 10px;">
+                        {% if ticket.status == 'Open' %}
+                            <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107;">{{ ticket.status }}</span>
+                        {% elif ticket.status == 'Investigating' %}
+                            <span class="badge" style="background: rgba(0, 210, 255, 0.2); color: var(--neon-secondary); border: 1px solid var(--neon-secondary);">{{ ticket.status }}</span>
+                        {% else %}
+                            <span class="badge" style="background: rgba(0, 250, 154, 0.2); color: var(--neon-primary); border: 1px solid var(--neon-primary);">{{ ticket.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 15px 10px;">
+                        {% if ticket.status == 'Open' %}
+                            <a href="{{ url_for('update_ticket_status', ticket_id=ticket.id, status='Investigating') }}" class="btn-secondary" style="padding: 5px 10px; font-size: 0.75rem; border-color: var(--neon-secondary); color: var(--neon-secondary);"><i class="fas fa-search"></i> Investigate</a>
+                        {% elif ticket.status == 'Investigating' %}
+                            <a href="{{ url_for('update_ticket_status', ticket_id=ticket.id, status='Resolved') }}" class="btn-primary" style="padding: 5px 10px; font-size: 0.75rem; border: none;"><i class="fas fa-check"></i> Mark Resolved</a>
+                        {% else %}
+                            <span style="color: #666; font-family: 'Share Tech Mono'; font-size: 0.8rem;">[ CYCLE CLOSED ]</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 30px; color: #666; font-family: 'Share Tech Mono';">No support transmissions in the mainframe.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mt-4" style="border-top: 3px solid #888;">
+    <h3 style="font-family: 'Orbitron'; color: white; margin-bottom: 15px;"><i class="fas fa-users" style="color: #888;"></i> User Management Matrix</h3>
+    <div class="table-responsive">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px dashed rgba(255,255,255,0.2); font-family: 'Orbitron'; color: #888;">
+                    <th style="padding: 10px;">ID</th>
+                    <th style="padding: 10px;">Username</th>
+                    <th style="padding: 10px;">Email</th>
+                    <th style="padding: 10px;">Role</th>
+                    <th style="padding: 10px;">Status</th>
+                    <th style="padding: 10px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 15px 10px; font-family: 'Share Tech Mono'; color: white;">{{ user.id }}</td>
+                    <td style="padding: 15px 10px; font-family: 'Share Tech Mono'; color: #ccc;">{{ user.username }}</td>
+                    <td style="padding: 15px 10px; font-family: 'Share Tech Mono'; color: #ccc;">{{ user.email }}</td>
+                    <td style="padding: 15px 10px; font-family: 'Orbitron'; color: var(--neon-secondary);">{{ user.role|capitalize }}</td>
+                    <td style="padding: 15px 10px;">
+                        <span class="badge" >
+                            {{ 'Blocked' if user.is_blocked else 'Active' }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px 10px;">
+                        {% if user.role != 'admin' %}
+                        <a href="{{ url_for('toggle_user', user_id=user.id) }}" class="btn-secondary">
+                            {{ 'Restore Access' if user.is_blocked else 'Revoke Access' }}
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('adminChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: [1200, 1900, 3000, { total_revenue }], // Fixed Jinja syntax here
+                backgroundColor: 'rgba(0, 250, 154, 0.1)',
+                borderColor: '#00fa9a',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#888', font: { family: 'Share Tech Mono' } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { ticks: { color: '#888', font: { family: 'Share Tech Mono' } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            },
+            plugins: { legend: { labels: { color: 'white', font: { family: 'Orbitron' } } } }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .timeline-container { display: flex; justify-content: space-between; align-items: flex-start; position: relative; margin: 40px 20px 20px 20px; padding-bottom: 20px; }
+    .timeline-container::before { content: ''; position: absolute; top: 20px; left: 30px; right: 30px; height: 3px; background: var(--border-light); z-index: 1; }
+    .timeline-progress { position: absolute; top: 20px; left: 30px; height: 3px; background: var(--primary); z-index: 2; transition: width 0.5s ease; }
+    .timeline-step { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; text-align: center; width: 80px; }
+    .step-icon { width: 40px; height: 40px; background: var(--bg-surface); border: 3px solid var(--border-light); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--text-muted); font-size: 1rem; margin-bottom: 12px; transition: all 0.3s ease; box-shadow: 0 0 0 4px var(--bg-surface); }
+    .step-label { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+    .timeline-step.active .step-icon { border-color: var(--primary); color: var(--primary); background: #eff6ff; box-shadow: 0 0 0 4px var(--bg-surface), 0 0 15px rgba(37, 99, 235, 0.2); }
+    .timeline-step.active .step-label { color: var(--primary); }
+    .timeline-step.completed .step-icon { border-color: var(--success); background: var(--success); color: white; }
+    .timeline-step.completed .step-label { color: var(--text-main); }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+    <div>
+        <h2 class="page-title" style="font-family: 'Inter', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; letter-spacing: -1px;">SHIPMENT TRACKING</h2>
+        <p style="color: var(--text-muted); font-weight: 500;">
+            <i class="fas fa-box-open" style="color: var(--primary); margin-right: 6px;"></i> GLOBAL LOGISTICS NETWORK
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('farmer_dashboard') }}" class="btn-secondary" style="padding: 10px 20px;">
+            <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Return to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="orders-container">
+    {% for order in orders %}
+    <div class="card mb-4" style="padding: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 20px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3 style="font-family: 'Inter'; font-weight: 700; color: var(--text-main); margin: 0;">#ORD-{{ order.id }}</h3>
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Placed: {{ order.date_ordered.strftime('%b %d, %Y - %H:%M') }}</span>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: block;">ORDER TOTAL</span>
+                <span style="font-size: 1.8rem; color: var(--primary); font-weight: 700;">₹{{ order.total_amount }}</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px; align-items: start;">
+            <div>
+                <h4 style="font-family: 'Inter'; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;">Manifest Items</h4>
+                <div style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
+                    {% for item in order.items %}
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; background: var(--secondary); padding: 12px; border-radius: 8px; border: 1px solid var(--border-light);">
+                        <img src="{{ url_for('static', filename='uploads/' + item.product.image_file) }}" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-light);">
+                        <div>
+                            <div style="font-family: 'Inter'; font-weight: 600; font-size: 0.95rem; color: var(--text-main);">{{ item.product.name }}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                                <span style="font-weight: 600; color: var(--primary);">{{ item.quantity }}x</span> &nbsp;|&nbsp; ₹{{ item.price_at_purchase }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="background: var(--bg-base); padding: 24px; border-radius: 12px; border: 1px solid var(--border-light);">
+                <h4 style="font-family: 'Inter'; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Delivery Status</h4>
+                
+                {% set progress = 0 %}
+                {% if order.status == 'Processing' %}{% set progress = 0 %}
+                {% elif order.status == 'Dispatched' %}{% set progress = 33 %}
+                {% elif order.status == 'In Transit' %}{% set progress = 66 %}
+                {% elif order.status == 'Delivered' %}{% set progress = 100 %}
+                {% endif %}
+
+                <div class="timeline-container">
+                    <div class="timeline-progress"></div>
+                    <div class="timeline-step {% if order.status in ['Processing', 'Dispatched', 'In Transit', 'Delivered'] %}active{% endif %} {% if order.status in ['Dispatched', 'In Transit', 'Delivered'] %}completed{% endif %}">
+                        <div class="step-icon"><i class="fas fa-clipboard-list"></i></div><span class="step-label">Processing</span>
+                    </div>
+                    <div class="timeline-step {% if order.status in ['Dispatched', 'In Transit', 'Delivered'] %}active{% endif %} {% if order.status in ['In Transit', 'Delivered'] %}completed{% endif %}">
+                        <div class="step-icon"><i class="fas fa-box"></i></div><span class="step-label">Dispatched</span>
+                    </div>
+                    <div class="timeline-step {% if order.status in ['In Transit', 'Delivered'] %}active{% endif %} {% if order.status == 'Delivered' %}completed{% endif %}">
+                        <div class="step-icon"><i class="fas fa-truck"></i></div><span class="step-label">In Transit</span>
+                    </div>
+                    <div class="timeline-step {% if order.status == 'Delivered' %}active completed{% endif %}">
+                        <div class="step-icon"><i class="fas fa-check-circle"></i></div><span class="step-label">Delivered</span>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    {% if order.status == 'In Transit' or order.status == 'Dispatched' %}
+                    <div style="background: #eff6ff; border: 2px dashed var(--primary); padding: 20px 30px; border-radius: 8px; display: inline-block; min-width: 300px;">
+                        <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Secure Handshake OTP</p>
+                        <h2 style="margin: 5px 0 0 0; color: var(--primary); font-family: monospace; font-size: 2.8rem; letter-spacing: 8px;">{{ order.delivery_otp }}</h2>
+                        <p style="margin: 5px 0 15px 0; font-size: 0.85rem; color: var(--text-main); font-weight: 500;">Provide this code to the courier upon arrival.</p>
+                        
+                        <!-- NEW COURIER CONTACT BLOCK WITH JINJA SPLIT -->
+                        {% if order.courier %}
+                        <div style="border-top: 1px dashed rgba(37, 99, 235, 0.3); padding-top: 15px; margin-top: 15px; text-align: left;">
+                            <p style="margin: 0 0 10px 0; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Assigned Courier</p>
+                            
+                            <p style="margin: 0 0 8px 0; font-size: 0.95rem; color: var(--text-main); font-weight: 600;">
+                                <i class="fas fa-id-badge" style="color: var(--primary); margin-right: 8px; width: 16px;"></i> 
+                                {{ order.courier.username.split('(')[0] }}
+                            </p>
+                            <p style="margin: 0; font-size: 0.95rem; color: var(--text-main); font-weight: 600;">
+                                <i class="fas fa-phone-alt" style="color: var(--success); margin-right: 8px; width: 16px;"></i> 
+                                {% if '(' in order.courier.username %}
+                                    {{ order.courier.username.split('(')[1].split(')')[0] }}
+                                {% else %}
+                                    Not Available
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                    {% elif order.status == 'Delivered' %}
+                    <div style="display: inline-flex; align-items: center; background: #d1fae5; color: #047857; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                        <i class="fas fa-check-circle" style="margin-right: 8px; font-size: 1.2rem;"></i> Package Successfully Delivered
+                    </div>
+                    {% else %}
+                    <div style="display: inline-flex; align-items: center; background: var(--secondary); color: var(--text-muted); padding: 10px 20px; border-radius: 8px; font-weight: 500; border: 1px solid var(--border-light);">
+                        <i class="fas fa-box-open" style="margin-right: 8px;"></i> Awaiting Dispatch from Vendor
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 80px 20px; background: var(--secondary); border: 1px dashed var(--border-focus);">
+        <i class="fas fa-shopping-bag" style="font-size: 4rem; color: var(--border-focus); margin-bottom: 20px;"></i>
+        <h3 style="font-weight: 700; color: var(--text-main); margin-bottom: 10px; font-size: 1.5rem;">No Order History</h3>
+        <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 24px;">You haven't placed any supply orders yet.</p>
+        <a href="{{ url_for('shop') }}" class="btn-primary" style="padding: 12px 24px; font-size: 1rem;"><i class="fas fa-store" style="margin-right: 8px;"></i> Browse Supply Depot</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

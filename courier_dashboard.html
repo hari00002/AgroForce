@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+    <div>
+        <h2 class="page-title" style="font-family: 'Inter', sans-serif; font-size: 2.2rem; margin-bottom: 5px; font-weight: 700; color: var(--text-main); letter-spacing: -1px;">LOGISTICS TERMINAL</h2>
+        <p style="color: var(--text-muted); font-weight: 500;">
+            <i class="fas fa-map-marker-alt" style="color: var(--primary); margin-right: 5px;"></i> ASSIGNED SECTOR: <span style="font-weight: 700; color: var(--text-main); text-transform: uppercase;">{{ location }}</span>
+        </p>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+    <div class="card" style="border-left: 4px solid var(--success);">
+        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Total Earnings</p>
+        <h3 style="font-size: 2rem; margin-top: 8px; color: var(--success); font-family: 'Inter'; font-weight: 700;">₹{{ earnings }}</h3>
+    </div>
+    <div class="card" style="border-left: 4px solid var(--primary);">
+        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Regional Pickups Available</p>
+        <h3 style="font-size: 2rem; margin-top: 8px; color: var(--text-main); font-weight: 700;">{{ available_orders|length }}</h3>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: 32px;">
+    
+    <div class="card" style="border-top: 3px solid var(--primary);">
+        <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; color: var(--text-main);"><i class="fas fa-box-open" style="color: var(--primary); margin-right: 8px;"></i> Available Pickups in {{ location|capitalize }}</h3>
+        
+        <div class="table-responsive">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr>
+                        <th>Order Ref</th>
+                        <th>Destination</th>
+                        <th>Value</th>
+                        <th>Directive</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in available_orders %}
+                    <tr>
+                        <td style="font-weight: 600; color: var(--text-muted);">#ORD-{{ order.id }}</td>
+                        <td>
+                            <strong style="color: var(--text-main);">{{ order.full_name }}</strong><br>
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">{{ order.address }}</span>
+                        </td>
+                        <td style="font-weight: 600; color: var(--success);">₹{{ order.total_amount }}</td>
+                        <td>
+                            <form action="{{ url_for('assign_order', order_id=order.id) }}" method="POST">
+                                <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem;">Acquire Package</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px; color: var(--border-focus);"></i>
+                            <p>No pending shipments in your sector right now.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid var(--success);">
+        <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; color: var(--text-main);"><i class="fas fa-motorcycle" style="color: var(--success); margin-right: 8px;"></i> My Active Deliveries</h3>
+        
+        <div class="table-responsive">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr>
+                        <th>Order Ref</th>
+                        <th>Client Comms</th>
+                        <th>Status</th>
+                        <th>OTP Verification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dlv in deliveries %}
+                    <tr>
+                        <td style="font-weight: 600; color: var(--text-muted);">#ORD-{{ dlv.id }}</td>
+                        <td>
+                            <strong style="color: var(--text-main);">{{ dlv.full_name }}</strong><br>
+                            <span style="font-size: 0.85rem; color: var(--primary);"><i class="fas fa-phone-alt"></i> {{ dlv.phone }}</span><br>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">{{ dlv.address }}</span>
+                        </td>
+                        <td>
+                            {% if dlv.status == 'Delivered' %}
+                                <span class="status-badge completed">Delivered</span>
+                            {% else %}
+                                <span class="status-badge pending">In Transit</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if dlv.status != 'Delivered' %}
+                            <form action="{{ url_for('verify_delivery', order_id=dlv.id) }}" method="POST" style="display: flex; gap: 8px;">
+                                <input type="text" name="otp" placeholder="4-Digit OTP" required maxlength="4" style="width: 120px; padding: 6px; font-family: monospace; text-align: center; border: 1px solid var(--border-focus); border-radius: 4px;">
+                                <button type="submit" class="btn-primary" style="padding: 6px 12px; font-size: 0.85rem; background: var(--success);">Verify</button>
+                            </form>
+                            {% else %}
+                                <span style="color: var(--success); font-weight: 600; font-size: 0.85rem;"><i class="fas fa-shield-alt"></i> Handshake Secure</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

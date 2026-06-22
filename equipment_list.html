@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Equipment List | AgriRent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body style="background-color: rgba(106, 255, 98, 0.826);">
+
+<header class="navbar">
+    <div class="logo">AgriRent</div>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/logout">Logout</a>
+    </nav>
+</header>
+
+<section class="equipment-container">
+    <h2>Available Equipment</h2>
+
+    <div class="equipment-grid">
+        <div class="equipment-card">
+            <img src="/static/images/tractor.jpg" alt="Tractor">
+            <h3>Tractor</h3>
+            <p>₹1500 / day</p>
+            <button data-equipment-id="1">Book Now</button>
+        </div>
+
+        <div class="equipment-card">
+            <img src="/static/images/harvester.jpg" alt="Harvester">
+            <h3>Harvester</h3>
+            <p>₹3000 / day</p>
+            <button data-equipment-id="2">Book Now</button>
+        </div>
+    </div>
+</section>
+
+<script src="/static/js/script.js"></script>
+</body>
+</html>

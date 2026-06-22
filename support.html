@@ -1,0 +1,288 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    /* Support Specific Styles */
+    .terminal-window {
+        background: rgba(219, 255, 224, 0.5);
+        border: 1px solid blue;
+        border-radius: 8px;
+        height: 300px;
+        overflow-y: auto;
+        padding: 15px;
+        font-family: 'Share Tech Mono', monospace;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: inset 0 0 20px rgba(0,0,255,0.05);
+    }
+    .chat-msg {
+        max-width: 80%;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    .chat-bot {
+        background: rgba(0, 0, 255, 0.1);
+        border-left: 3px solid blue;
+        color: black;
+        align-self: flex-start;
+    }
+    .chat-user {
+        background: rgba(0, 0, 255, 0.1);
+        border-right: 3px solid blue;
+        color: black;
+        align-self: flex-end;
+    }
+    
+    /* Cyberpunk Accordion FAQ */
+    .faq-item {
+       background: rgba(219, 255, 224, 0.5);
+        border: 1px solid rgba(0,0,255,0.2);
+        margin-bottom: 10px;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .faq-question {
+        padding: 15px;
+        cursor: pointer;
+        font-family: 'Orbitron';
+        color: blue;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(219, 255, 224, 0.5);
+        transition: 0.3s;
+    }
+    .faq-question:hover { background: rgba(0, 0, 255, 0.1); }
+    .faq-answer {
+        padding: 0 15px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        font-family: 'Share Tech Mono';
+        color: black;
+        font-size: 0.9rem;
+    }
+    
+    /* Ticket Status Badges */
+    .status-Open { background: rgba(0, 0, 255, 0.1); color: blue; border: 1px solid blue; }
+    .status-Investigating { background: rgba(0, 0, 255, 0.1); color: blue; border: 1px solid blue; }
+    .status-Resolved { background: rgba(0, 0, 255, 0.1); color: blue; border: 1px solid blue; }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+    <div>
+        <h2 class="page-title" style="font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 5px; color: blue;">COMM-LINK HUB</h2>
+        <p class="hud-text" style="color: black;">
+            <i class="fas fa-satellite blink" style="color: blue; font-size: 0.8rem; vertical-align: middle;font-size:30px;"></i> GLOBAL SUPPORT MATRIX
+        </p>
+    </div>
+</div>
+
+<div class="dashboard-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+    
+    <div>
+        <div class="card mb-4" style="border-top: 3px solid blue;">
+            <h3 style="font-family: 'Orbitron'; color: blue; margin-bottom: 15px;">
+                <i class="fas fa-robot" style="color: blue;"></i> VIRTUAL ASSISTANT
+            </h3>
+            
+            <div class="terminal-window" id="chatBox">
+                <div class="chat-msg chat-bot">
+                    <strong style="color: blue; font-family: 'Orbitron'; font-size: 0.8rem;">SYSTEM //</strong><br>
+                    Greetings, Operative {{ current_user.username }}. I am the automated logistics AI. How can I assist your network query today?
+                </div>
+                <div class="chat-msg chat-bot">
+                    <strong style="color: blue; font-family: 'Orbitron'; font-size: 0.8rem;">SYSTEM //</strong><br>
+                    Greetings, Operative {{ current_user.username }}. Query not recognized in current sub-routines. Please try using keywords like 'order', 'refund', 'OTP', or submit a manual ticket.
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="text" id="chatInput" placeholder="Type query here..." style="flex: 1; padding: 12px; background: rgba(219, 255, 224, 0.5); border: 1px solid rgba(0,0,255,0.3); color: black; border-radius: 4px; font-family: 'Share Tech Mono';">
+                <button onclick="sendChatMessage()" class="btn-secondary" style="background: transparent; border: 1px solid blue; color: blue; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="card" style="background: rgba(219, 255, 224, 0.5);">
+            <h3 style="font-family: 'Orbitron'; color: blue; margin-bottom: 20px;">
+                <i class="fas fa-database"></i> KNOWLEDGE DATA-BANKS
+            </h3>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>How do I track a dispatched payload?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p style="padding-top: 10px; padding-bottom: 10px;">Navigate to your <strong>My Orders</strong> terminal. Select "Ping Logistics Courier" to access the live satellite tracking map and view your Secure Handshake OTP.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>How do I initiate a return or refund?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p style="padding-top: 10px; padding-bottom: 10px;">Once an order reaches "Delivered" status, a "Request Return/Refund" protocol button will illuminate on your tracking timeline. Administrators will process the request within 24 standard cycles.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    <span>Hardware Rental malfunctions?</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p style="padding-top: 10px; padding-bottom: 10px;">If rented IoT-enabled hardware fails, power down immediately and submit an Urgent Priority ticket. A Fleet Commander will dispatch a repair drone or replacement unit.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="card mb-4" style="border-top: 3px solid blue;">
+            <h3 style="font-family: 'Orbitron'; color: blue; margin-bottom: 20px;">
+                <i class="fas fa-satellite-dish" style="color: blue;"></i> TRANSMIT SUPPORT TICKET
+            </h3>
+            
+            <form method="POST" action="{{ url_for('support') }}">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label style="color: black; font-family: 'Share Tech Mono'; font-size: 0.85rem;">Transmission Subject</label>
+                        <input type="text" name="subject" required style="width: 100%; padding: 10px; background: rgba(219, 255, 224, 0.5); border: 1px solid rgba(0,0,255,0.3); color: black; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="color: black; font-family: 'Share Tech Mono'; font-size: 0.85rem;">Query Category</label>
+                        <select name="category" required style="width: 100%; padding: 10px; background: rgba(219, 255, 224, 0.5); border: 1px solid rgba(0,0,255,0.3); color: black; border-radius: 4px;">
+                            <option value="Hardware Rental">Hardware Rental Issue</option>
+                            <option value="Logistics/Delivery">Logistics / Delivery Delay</option>
+                            <option value="Payment/Refund">Payment / Refund Processing</option>
+                            <option value="Account Security">Account Security / Auth</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <label style="color: black; font-family: 'Share Tech Mono'; font-size: 0.85rem;">Detailed Report</label>
+                <textarea name="description" rows="4" required style="width: 100%; padding: 10px; margin-bottom: 15px; background: rgba(219, 255, 224, 0.5); border: 1px solid rgba(0,0,255,0.3); color: black; border-radius: 4px; font-family: 'Share Tech Mono'; resize: vertical;"></textarea>
+                
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-family: 'Orbitron'; font-size: 1rem; border: none; cursor: pointer; background: blue; color: white;">
+                    <i class="fas fa-upload"></i> Uplink Data to Mainframe
+                </button>
+            </form>
+        </div>
+
+        <h3 style="font-family: 'Orbitron'; color: blue; font-size: 1.1rem; border-bottom: 1px solid rgba(0,0,255,0.2); padding-bottom: 10px; margin-bottom: 15px;">
+            <i class="fas fa-history"></i> MY PREVIOUS TRANSMISSIONS
+        </h3>
+        
+        <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+            {% for ticket in tickets %}
+            <div class="card" style="padding: 15px; margin-bottom: 15px; background: rgba(219, 255, 224, 0.5); border: 1px dashed rgba(0,0,255,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                    <div>
+                        <h4 style="color: blue; font-family: 'Orbitron'; font-size: 1rem; margin: 0 0 5px;">{{ ticket.subject }}</h4>
+                        <span style="color: black; font-family: 'Share Tech Mono'; font-size: 0.75rem;">ID: #TKT-{{ ticket.id }} | {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <span class="badge status-{{ ticket.status }}" style="color: blue;">{{ ticket.status }}</span>
+                </div>
+                
+                <p style="color: black; font-family: 'Share Tech Mono'; font-size: 0.85rem; margin: 10px 0; background: rgba(219, 255, 224, 0.5); padding: 10px; border-radius: 4px; border-left: 2px solid blue;">
+                    {{ ticket.description }}
+                </p>
+                <div style="text-align: right;">
+                    <span style="color: blue; font-family: 'Share Tech Mono'; font-size: 0.75rem;">Category: {{ ticket.category }}</span>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 30px; color: black; font-family: 'Share Tech Mono';">
+                <i class="fas fa-folder-open fa-2x mb-2" style="color: blue;"></i><br>No transmissions found in the database.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- FAQ Accordion Logic ---
+    function toggleFaq(element) {
+        // Close all other answers
+        document.querySelectorAll('.faq-answer').forEach(ans => {
+            if(ans !== element.nextElementSibling) {
+                ans.style.maxHeight = null;
+            }
+        });
+        
+        // Toggle the clicked answer
+        let answer = element.nextElementSibling;
+        if (answer.style.maxHeight) {
+            answer.style.maxHeight = null;
+        } else {
+            answer.style.maxHeight = answer.scrollHeight + "px";
+        }
+    }
+
+    // --- AI Chatbot Simulation Logic ---
+    const chatInput = document.getElementById('chatInput');
+    const chatBox = document.getElementById('chatBox');
+
+    // Allow pressing "Enter" to send message
+    chatInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendChatMessage();
+        }
+    });
+
+    function sendChatMessage() {
+        let msg = chatInput.value.trim();
+        if (msg === "") return;
+
+        // 1. Append User Message
+        appendMessage(msg, 'user');
+        chatInput.value = "";
+
+        // 2. Simulate AI Typing delay
+        setTimeout(() => {
+            let reply = generateAiResponse(msg.toLowerCase());
+            appendMessage(reply, 'bot');
+        }, 800);
+    }
+
+    function appendMessage(text, sender) {
+        let msgDiv = document.createElement('div');
+        msgDiv.className = `chat-msg ${sender === 'user' ? 'chat-user' : 'chat-bot'}`;
+        
+        if(sender === 'bot') {
+            msgDiv.innerHTML = `<strong style="color: blue; font-family: 'Orbitron'; font-size: 0.8rem;">SYSTEM //</strong><br>${text}`;
+        } else {
+            msgDiv.innerHTML = `<strong style="color: blue; font-family: 'Orbitron'; font-size: 0.8rem;">YOU //</strong><br>${text}`;
+        }
+        
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to bottom
+    }
+
+    function generateAiResponse(input) {
+        // Keyword-based AI simulation
+        if (input.includes("order") || input.includes("track")) {
+            return "To track an order, navigate to your 'My Orders' terminal. You can ping the live GPS of your assigned courier from there.";
+        } else if (input.includes("refund") || input.includes("return")) {
+            return "Refund protocols can be initiated on the tracking page of any 'Delivered' payload. An Admin must approve the transaction.";
+        } else if (input.includes("otp") || input.includes("pin")) {
+            return "Your Secure Handshake OTP is located on your Order Tracking page. Do not share this with the courier until the hardware is visually verified.";
+        } else if (input.includes("human") || input.includes("agent")) {
+            return "If my automated data-banks are insufficient, please use the 'Transmit Support Ticket' form on the right. A human operative will contact your comm-link.";
+        } else if (input.includes("hello") || input.includes("hi")) {
+            return "Connection established. Please state your specific query regarding logistics, hardware, or payments.";
+        } else {
+            return "Query not recognized in current sub-routines. Please try using keywords like 'order', 'refund', 'OTP', or submit a manual ticket.";
+        }
+    }
+</script>
+{% endblock %}

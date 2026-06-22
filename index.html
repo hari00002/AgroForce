@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="text-align: center; padding: 100px 20px; position: relative; z-index: 1;">
+    <h1 style="font-family: 'Orbitron', sans-serif; font-size: 4.5rem; margin-bottom: 20px; text-shadow: var(--glow-primary);">
+        FARMING <span style="color: var(--neon-primary);">AGRI-Tech.</span>
+    </h1>
+    <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 50px; line-height: 1.8;">
+        Welcome to the Agricultural Network. Deploy autonomous drone fleets, rent heavy cyber-machinery.
+    </p>
+    
+    <div style="display: flex; gap: 20px; justify-content: center;">
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn-primary" style="font-size: 1.2rem; padding: 15px 40px; box-shadow: 0 0 30px rgba(0,250,154,0.4);">Join the Network</a>
+        {% else %}
+             {% if current_user.role == 'farmer' %}
+                <a href="{{ url_for('farmer_dashboard') }}" class="btn-primary" style="font-size: 1.2rem; padding: 15px 40px;">Access Neural Dash</a>
+             {% else %}
+                <a href="{{ url_for('owner_dashboard') }}" class="btn-primary" style="font-size: 1.2rem; padding: 15px 40px;">Access Fleet Command</a>
+             {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-top: 50px; position: relative; z-index: 1;">
+<div class="card" style="text-align: center;">
+    <i class="fas fa-headset" style="font-size: 3rem; color: var(--neon-primary); margin-bottom: 15px;"></i>
+    <h3 class="hud-text">Customer Support</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Dedicated assistance for booking, payments, and rental inquiries.
+    </p>
+</div>
+<div class="card" style="text-align: center;">
+    <i class="fas fa-calendar-alt" style="font-size: 3rem; color: var(--neon-secondary); margin-bottom: 15px;"></i>
+    <h3 class="hud-text">Crop Planning Calendar</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+        View seasonal farming schedules and best planting periods.
+    </p>
+</div>
+<div class="card" style="text-align: center;">
+    <i class="fas fa-user-check" style="font-size: 3rem; color: var(--warning); margin-bottom: 15px;"></i>
+    <h3 class="hud-text">Verified Owners</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">
+        All equipment providers are verified for safety and reliability.
+    </p>
+</div>
+</div>
+<div class="card" style="text-align: center; padding: 40px; margin-top: 40px; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border: 1px solid var(--border-light);">
+    
+    <div style="width: 64px; height: 64px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: white; font-size: 1.8rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+        <i class="fas fa-motorcycle"></i>
+    </div>
+    
+    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">Join the Logistics Fleet</h3>
+    
+    <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+        Become an independent courier. Deliver regional agricultural supplies directly to nodes and earn credits for every successful drop-off.
+    </p>
+    
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('courier_register') }}" class="btn-secondary" style="padding: 12px 24px; font-size: 1rem; text-decoration: none; background: white;">
+            <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Register as Courier
+        </a>
+    </div>
+    
+</div>
+{% endblock %}

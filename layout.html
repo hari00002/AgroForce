@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTech | Neo-Farming</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    
+<nav class="glass-nav" style="background-color: rgba(174, 247, 182, 0.936);">
+        <div class="logo">
+            <i class="fas fa-leaf"></i>  AGROFORCE <span style="color:var(--text-main); font-weight:300;"></span>
+        </div>
+        <div class="nav-links">
+            
+            {% if current_user.is_authenticated %}
+                
+                {% if current_user.role == 'farmer' %}
+                    <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a>
+                    <a href="{{ url_for('shop') }}"><i class="fas fa-store"></i> Shop</a>
+                    <a href="{{ url_for('my_orders') }}">
+                        <i class="fas fa-satellite-dish"></i> my orders
+                    </a>
+                    <a href="{{ url_for('support') }}" class="nav-link">
+                        <i class="fas fa-headset" style="color: var(--neon-secondary);"></i> Support
+                    </a>
+                    <a href="{{ url_for('farmer_dashboard') }}"><i class="fas fa-columns"></i> Neural Dash</a>
+                    <a href="{{ url_for('view_cart') }}"><i class="fas fa-shopping-cart"></i> Cart</a>
+                
+                {% elif current_user.role == 'owner' %}
+                
+                {% elif current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}"><i class="fas fa-network-wired"></i> Core</a>
+                {% endif %}
+                
+                <div class="profile-container">
+                    <div class="profile-container-clean">
+                        <div class="user-info">
+                            <div class="avatar-placeholder">
+                                {{ current_user.username[:1]|upper }} 
+                            </div>
+                            <div class="user-details">
+                                <span class="user-label">Logged in as</span>
+                                <span class="user-id">{{ current_user.username }}</span>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="btn-logout-clean" title="Logout">
+                            <i class="fas fa-sign-out-alt" style="color: white;"></i>
+                        </a>
+                    </div>
+                </div>
+
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn-primary" style="color: white;"><b>LOGIN</b></a>
+                <a href="{{ url_for('register') }}" class="btn-primary" style="color: white;"><b>REGISTER</b></a>
+            {% endif %}
+            
+        </div>
+    </nav>
+    {% if request.endpoint == 'index' %}
+    <nav class="glass-nav" style="background-color: rgba(174, 247, 183, 0.639);">
+        <div class="nav-links">
+            <div style="border-left: 1px solid var(--border-light); margin: 0 8px; height: 24px;"></div>
+            <a href="{{ url_for('courier_register') }}" class="btn-secondary" style="font-size: 0.9rem; padding: 8px 16px; background: transparent; border-color: transparent;">
+                <i class="fas fa-motorcycle" style="margin-right: 6px;"></i>Fleet Sign Up
+            </a>
+        </div>
+    </nav>
+{% endif %}
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const flashElement = document.getElementById("flash-data");
+
+    if (flashElement) {
+        const messages = JSON.parse(flashElement.dataset.messages);
+
+        if (messages.length > 0) {
+            messages.forEach(function(msg) {
+                showToast(msg[0], msg[1]);
+            });
+        }
+    }
+});
+
+        function showToast(category, message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${category}`;
+            
+            let icon = 'fas fa-info-circle';
+            if(category === 'success') icon = 'fas fa-check-circle';
+            if(category === 'danger') icon = 'fas fa-exclamation-triangle';
+
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="${icon}" style="font-size: 1.2rem;"></i>
+                    <span style="font-family: 'Poppins', sans-serif; font-size: 0.9rem;">${message}</span>
+                </div>
+                <div class="toast-progress"></div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after animation (4 seconds)
+            setTimeout(() => {
+                toast.style.animation = 'toastSlideOut 0.5s forwards';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

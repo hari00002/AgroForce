@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+    <div>
+        <h2 class="page-title" style="font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 5px;">PAYLOAD TRACKING</h2>
+        <p class="hud-text" style="color: var(--text-muted);">ORD-ID: <span style="color: white;">#{{ order.id }}</span></p>
+    </div>
+    <a href="{{ url_for('my_orders') }}" class="btn-secondary" style="font-family: 'Share Tech Mono';">Back to Requisitions</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+    
+    <div class="card" style="border-top: 3px solid var(--neon-secondary); background: rgba(179, 213, 247, 0.8);">
+        <h3 style="font-family: 'Orbitron'; color: white; margin-bottom: 25px;"><i class="fas fa-sitemap"></i> LIFECYCLE MATRIX</h3>
+        
+        <div style="padding-left: 20px; border-left: 2px solid rgba(246, 246, 246, 0.1); margin-left: 10px; font-family: 'Share Tech Mono';">
+            {% for event in history|reverse %}
+            <div style="position: relative; margin-bottom: 25px;">
+                <div ></div>
+                
+                <h4>{{ event.status }}</h4>
+                <p style="color: #666; font-size: 0.85rem; margin-top: 5px;">{{ event.time }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if order.order_status == 'Delivered' %}
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="{{ url_for('request_return', order_id=order.id) }}" class="btn-secondary" style="color: var(--warning); border-color: var(--warning);" onclick="return confirm('Initiate return protocol?');">Request Return/Refund</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div>
+        <div class="card mb-4" style="border-top: 3px solid var(--neon-primary); text-align: center;">
+            <h4 style="font-family: 'Orbitron'; color: #aaa; margin-bottom: 15px;">SECURE HANDSHAKE OTP</h4>
+            {% if order.order_status not in ['Delivered', 'Cancelled', 'Returned'] %}
+                <p style="font-family: 'Share Tech Mono'; font-size: 0.9rem; color: #888;">Provide this code to the operative upon arrival.</p>
+                <div style="font-size: 3rem; font-family: 'Orbitron'; color: var(--neon-primary); letter-spacing: 5px; font-weight: bold; background: rgba(0,250,154,0.1); padding: 10px; border-radius: 8px; border: 1px dashed var(--neon-primary); display: inline-block;">
+                    {{ order.delivery_otp }}
+                </div>
+            {% else %}
+                <div style="font-size: 1.5rem; font-family: 'Share Tech Mono'; color: #666;">[ CONSUMED ]</div>
+            {% endif %}
+        </div>
+        
+        <div class="card" style="background: rgba(0,0,0,0.4);">
+            <h4 style="font-family: 'Orbitron'; color: #aaa; margin-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px;">LOGISTICS DATA</h4>
+            <ul style="list-style: none; padding: 0; font-family: 'Share Tech Mono'; color: #ccc; line-height: 1.8;">
+                <li><strong>PAYMENT:</strong> <span style="color: var(--neon-secondary);">{{ order.payment_status }}</span></li>
+                <li><strong>ETA:</strong> {{ order.estimated_delivery.strftime('%Y-%m-%d') }}</li>
+                {% if order.courier %}
+                <li><strong>OPERATIVE:</strong> {{ order.courier.username }}</li>
+                <li><strong>COMM-LINK:</strong> {{ order.courier.contact_info }}</li>
+                {% else %}
+                <li><strong>OPERATIVE:</strong> <span style="color: #666;">Pending Assignment...</span></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

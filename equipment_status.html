@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .saas-subnav {
+        display: flex; align-items: center; background: var(--bg-surface);
+        border-bottom: 1px solid var(--border-light); padding: 0 40px;
+        margin: -40px -20px 40px -20px; position: sticky; top: 0; z-index: 900;
+        gap: 32px; overflow-x: auto; box-shadow: var(--shadow-sm);
+    }
+    .subnav-item {
+        padding: 16px 0; color: var(--text-muted); text-decoration: none;
+        font-size: 0.95rem; font-weight: 500; border-bottom: 2px solid transparent;
+        transition: all 0.2s ease; white-space: nowrap;
+    }
+    .subnav-item:hover { color: var(--text-main); }
+    .subnav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+</style>
+
+<nav class="saas-subnav">
+    <!-- Notice this link now goes back to the farmer dashboard -->
+    <a href="{{ url_for('farmer_dashboard') }}" class="subnav-item"><i class="fas fa-server"></i> Hardware Matrix</a>
+    <a href="{{ url_for('equipment_status') }}" class="subnav-item active"><i class="fas fa-satellite-dish"></i> Active Operations</a>
+    <a href="{{ url_for('seasonal_crop') }}" class="subnav-item"><i class="fas fa-calendar-alt"></i> Seasonal Crop Calendar</a>
+    
+    <div style="margin-left: auto; display: flex; align-items: center; color: var(--success); font-size: 0.85rem; font-weight: 600;">
+        <i class="fas fa-shield-alt" style="margin-right: 6px;"></i> Network Secure
+    </div>
+</nav>
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+    <div>
+        <h2 class="page-title" style="font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 5px;">ACTIVE OPERATIONS</h2>
+        <p class="hud-text" style="color: var(--text-muted);"><i class="fas fa-satellite-dish blink" style="color: var(--neon-secondary);"></i> TELEMETRY LOGS</p>
+    </div>
+    <a href="{{ url_for('farmer_dashboard') }}" class="btn-secondary" style="font-family: 'Share Tech Mono';">
+        <i class="fas fa-arrow-left"></i> Return to Matrix
+    </a>
+</div>
+
+<div class="card mt-4">
+    <div class="table-responsive">
+        {% if bookings|length > 0 %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Hardware Unit</th>
+                    <th>Operational Window</th>
+                    <th>Credits</th>
+                    <th>Network Status</th>
+                    <th>Telematics HUD</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 15px 10px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <img src="{{ url_for('static', filename='uploads/' + booking.equipment.image_file) }}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                            <div>
+                                <strong style="font-family: 'Orbitron'; font-size: 1rem; display: block; color: white;">{{ booking.equipment.name }}</strong>
+                                <span style="color: var(--neon-secondary); font-size: 0.8rem; font-family: 'Share Tech Mono';"><i class="fas fa-phone-alt"></i> {{ booking.equipment.owner.contact_info }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="hud-text" style="font-family: 'Share Tech Mono'; color: #ccc;">{{ booking.start_date.strftime('%d.%m.%y') }} - {{ booking.end_date.strftime('%d.%m.%y') }}</td>
+                    <td style="font-weight: bold; color: var(--neon-primary); font-family: 'Share Tech Mono'; font-size: 1.1rem;">₹{{ booking.total_price }}</td>
+                    <td>
+                        <span class="badge status-badge {{ booking.status|lower }}">{{ booking.status }}</span>
+                    </td>
+                    <td>
+                        {% if booking.status == 'Approved' %}
+                        <button class="btn-secondary" style="font-size: 0.8rem; padding: 8px 15px; font-family: 'Share Tech Mono'; border-color: var(--neon-secondary); color: var(--neon-secondary);" onclick="openIotModal('{{ booking.id }}', '{{ booking.equipment.name }}')">
+                            <i class="fas fa-rss blink"></i> Link
+                        </button>
+                        {% else %}
+                        <span style="color: #555; font-size: 0.85rem; font-family: 'Share Tech Mono';">[ NO SIGNAL ]</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 50px; color: var(--text-muted); font-family: 'Share Tech Mono';">
+            <i class="fas fa-satellite-dish fa-2x mb-3" style="color: #555;"></i>
+            <p>[ NO ACTIVE OPERATIONS FOUND IN DATABASE ]</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="iotModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+    <div class="modal-content card" style="width: 550px; border: 1px solid var(--neon-secondary); box-shadow: 0 0 50px rgba(0, 210, 255, 0.2); background: rgba(5, 10, 15, 0.95); position: relative; padding: 30px;">
+        <span class="close-modal" onclick="document.getElementById('iotModal').style.display='none'" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: #888; cursor: pointer;">&times;</span>
+        <h3 style="color: var(--neon-secondary); font-family: 'Orbitron'; margin-bottom: 5px;"><i class="fas fa-satellite"></i> LIVE TELEMETRY</h3>
+        <p id="iotEqName" style="color: white; font-weight: bold; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; font-size: 1.2rem;"></p>
+        
+        <div id="iotLoading" style="text-align: center; padding: 50px 0;">
+            <i class="fas fa-broadcast-tower blink" style="font-size: 3rem; color: var(--neon-secondary);"></i>
+            <p class="hud-text blink" style="margin-top: 20px; font-size: 1.1rem;">Establishing Secure Uplink...</p>
+        </div>
+
+        <div id="iotData" style="display: none;">
+            <div style="background: rgba(0, 210, 255, 0.05); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--neon-secondary);">
+                <p style="margin: 0; color: #888; font-size: 0.8rem; font-family: 'Orbitron';">AI CORE STATUS</p>
+                <h2 id="iotStatus" class="hud-text" style="color: white; margin: 5px 0 0 0; font-size: 1.6rem;">--</h2>
+            </div>
+            
+            <p style="color: #888; font-size: 0.8rem; font-family: 'Orbitron'; margin-bottom: 8px;">POWER MATRIX</p>
+            <div style="background: #111; border-radius: 4px; height: 12px; width: 100%; border: 1px solid #333; margin-bottom: 5px;">
+                <div id="iotBatteryBar" style="background: var(--neon-primary); height: 100%; width: 0%; transition: width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 10px var(--neon-primary);"></div>
+            </div>
+            <p id="iotBatteryText" class="hud-text" style="text-align: right; font-size: 1.2rem; margin-bottom: 20px;">0%</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="background: rgba(0,0,0,0.6); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <p style="margin: 0; color: #888; font-size: 0.8rem; font-family: 'Orbitron';"><i class="fas fa-crosshairs"></i> COORDINATES</p>
+                    <p id="iotGps" class="hud-text" style="color: var(--neon-secondary); margin: 8px 0 0 0; font-size: 1rem;">--</p>
+                </div>
+                <div style="background: rgba(0,0,0,0.6); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <p style="margin: 0; color: #888; font-size: 0.8rem; font-family: 'Orbitron';"><i class="fas fa-tachometer-alt"></i> EFFICIENCY</p>
+                    <p id="iotEfficiency" class="hud-text" style="color: var(--neon-primary); margin: 8px 0 0 0; font-size: 1.4rem;">--</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- IOT MODAL LOGIC ---
+function openIotModal(bookingId, eqName) {
+    document.getElementById('iotModal').style.display = 'flex';
+    document.getElementById('iotEqName').innerText = eqName;
+    document.getElementById('iotLoading').style.display = 'block';
+    document.getElementById('iotData').style.display = 'none';
+    document.getElementById('iotBatteryBar').style.width = '0%';
+
+    fetch(`/api/iot/${bookingId}`)
+        .then(r => r.json())
+        .then(data => {
+            setTimeout(() => {
+                document.getElementById('iotLoading').style.display = 'none';
+                document.getElementById('iotData').style.display = 'block';
+
+                document.getElementById('iotStatus').innerText = data.status;
+                document.getElementById('iotGps').innerText = data.gps;
+                document.getElementById('iotEfficiency').innerText = data.efficiency + "%";
+                document.getElementById('iotBatteryText').innerText = data.battery + "%";
+
+                const bar = document.getElementById('iotBatteryBar');
+                bar.style.width = data.battery + "%";
+
+                if (data.battery < 30) {
+                    bar.style.background = 'var(--danger)';
+                    bar.style.boxShadow = '0 0 10px var(--danger)';
+                } else {
+                    bar.style.background = 'var(--neon-primary)';
+                    bar.style.boxShadow = '0 0 10px var(--neon-primary)';
+                }
+            }, 1000);
+        });
+}
+
+// Close modal on outside click
+window.onclick = function(e) {
+    const modal = document.getElementById('iotModal');
+    if (e.target == modal) {
+        modal.style.display = "none";
+    }
+}
+</script>
+{% endblock %}

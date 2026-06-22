@@ -1,0 +1,309 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    /* ========================================= */
+    /* SECONDARY SAAS HEADER (SUB-NAV)           */
+    /* ========================================= */
+    .saas-subnav {
+        display: flex; align-items: center; background: var(--bg-surface);
+        border-bottom: 1px solid var(--border-light); padding: 0 40px;
+        margin: -40px -20px 40px -20px; position: sticky; top: 0; z-index: 900;
+        gap: 32px; overflow-x: auto; box-shadow: var(--shadow-sm);
+    }
+    .subnav-item {
+        padding: 16px 0; color: var(--text-muted); text-decoration: none;
+        font-size: 0.95rem; font-weight: 500; border-bottom: 2px solid transparent;
+        transition: all 0.2s ease; white-space: nowrap; cursor: pointer;
+    }
+    .subnav-item:hover { color: var(--text-main); }
+    .subnav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .subnav-item i { margin-right: 8px; }
+
+    /* ========================================= */
+    /* MATRIX SPECIFIC STYLES                    */
+    /* ========================================= */
+    .control-panel {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 32px; flex-wrap: wrap; gap: 20px;
+    }
+    .zone-indicator { text-align: right; }
+    
+    .month-title {
+        font-size: 1.1rem; font-weight: 600; color: var(--text-main);
+        margin: 0 0 16px 0; display: flex; justify-content: space-between;
+        align-items: center; border-bottom: 1px solid var(--border-light);
+        padding-bottom: 12px;
+    }
+
+    .data-row {
+        margin-bottom: 12px; font-size: 0.9rem; line-height: 1.5;
+        display: flex; flex-direction: column; gap: 4px;
+    }
+    .data-label { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+    .data-value { color: var(--text-main); font-weight: 500; }
+    .highlight-value { color: var(--primary); font-weight: 600; }
+
+    /* Current Month Active Animation */
+    .current-month-active {
+        border: 2px solid var(--primary);
+        background-color: #eff6ff; 
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        animation: softPulse 2s infinite alternate;
+    }
+    .current-month-active .month-title {
+        color: var(--primary); border-bottom-color: rgba(37, 99, 235, 0.2);
+    }
+    @keyframes softPulse {
+        from { box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+        to { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25); }
+    }
+</style>
+
+<nav class="saas-subnav">
+    <a href="{{ url_for('farmer_dashboard') }}" class="subnav-item"><i class="fas fa-server"></i> Hardware Matrix</a>
+    <a href="{{ url_for('equipment_status') }}" class="subnav-item"><i class="fas fa-satellite-dish"></i> Active Operations</a>
+    <a href="{{ url_for('seasonal_crop') }}" class="subnav-item active"><i class="fas fa-calendar-alt"></i> Seasonal Crop Calendar</a>
+    
+    <div style="margin-left: auto; display: flex; align-items: center; color: var(--success); font-size: 0.85rem; font-weight: 600;">
+        <i class="fas fa-shield-alt" style="margin-right: 6px;"></i> Network Secure
+    </div>
+</nav>
+
+<div class="container" style="margin-top: 0; padding-top: 20px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+        <div>
+            <h2 class="page-title" style="font-family: 'Inter', sans-serif; font-size: 2.5rem; margin-bottom: 5px; font-weight: 700; letter-spacing: -1px; color: var(--text-main);">SEASONAL CROP MATRIX</h2>
+            <p class="hud-text" style="color: var(--text-muted);"><i class="fas fa-circle" style="color: var(--success); font-size: 0.6rem; vertical-align: middle; margin-right: 5px;"></i> SYSTEM ONLINE // STATUS: OPTIMAL</p>
+        </div>
+    </div>
+        
+    <div class="card control-panel">
+        <div>
+            <label style="display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 0.875rem; font-weight: 600; text-transform: uppercase;">Target Sector (District)</label>
+            <select id="districtSelect" onchange="renderMatrix()" style="width: 100%; padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--border-light); color: var(--text-main); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.95rem; min-width: 250px;">
+                <option value="Ariyalur">Ariyalur</option>
+                <option value="Chengalpattu">Chengalpattu</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Coimbatore" selected>Coimbatore</option>
+                <option value="Cuddalore">Cuddalore</option>
+                <option value="Dharmapuri">Dharmapuri</option>
+                <option value="Dindigul">Dindigul</option>
+                <option value="Erode">Erode</option>
+                <option value="Kallakurichi">Kallakurichi</option>
+                <option value="Kanchipuram">Kanchipuram</option>
+                <option value="Kanyakumari">Kanyakumari</option>
+                <option value="Karur">Karur</option>
+                <option value="Krishnagiri">Krishnagiri</option>
+                <option value="Madurai">Madurai</option>
+                <option value="Mayiladuthurai">Mayiladuthurai</option>
+                <option value="Nagapattinam">Nagapattinam</option>
+                <option value="Namakkal">Namakkal</option>
+                <option value="Nilgiris">Nilgiris</option>
+                <option value="Perambalur">Perambalur</option>
+                <option value="Pudukkottai">Pudukkottai</option>
+                <option value="Ramanathapuram">Ramanathapuram</option>
+                <option value="Ranipet">Ranipet</option>
+                <option value="Salem">Salem</option>
+                <option value="Sivaganga">Sivaganga</option>
+                <option value="Tenkasi">Tenkasi</option>
+                <option value="Thanjavur">Thanjavur</option>
+                <option value="Theni">Theni</option>
+                <option value="Thoothukudi">Thoothukudi</option>
+                <option value="Tiruchirappalli">Tiruchirappalli</option>
+                <option value="Tirunelveli">Tirunelveli</option>
+                <option value="Tirupathur">Tirupathur</option>
+                <option value="Tiruppur">Tiruppur</option>
+                <option value="Tiruvallur">Tiruvallur</option>
+                <option value="Tiruvannamalai">Tiruvannamalai</option>
+                <option value="Tiruvarur">Tiruvarur</option>
+                <option value="Vellore">Vellore</option>
+                <option value="Viluppuram">Viluppuram</option>
+                <option value="Virudhunagar">Virudhunagar</option>
+            </select>
+        </div>
+        
+        <div class="zone-indicator">
+            <label style="display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 0.875rem; font-weight: 600; text-transform: uppercase;">DETECTED AGRO-ZONE</label>
+            <div id="zoneDisplay" style="color: var(--primary); font-weight: 700; font-size: 1.2rem;">WESTERN ZONE</div>
+        </div>
+    </div>
+
+    <div class="grid-layout" id="matrixGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+    </div>
+
+</div>
+
+<script>
+    // --- 1. CLIMATIC DATABASE (Extensive Tamil Nadu Crop Data) ---
+    const agroZones = {
+        delta: {
+            districts: ["Thanjavur", "Tiruvarur", "Nagapattinam", "Mayiladuthurai", "Tiruchirappalli", "Ariyalur", "Pudukkottai", "Karur", "Cuddalore"],
+            name: "CAUVERY DELTA ZONE",
+            months: [
+                { season: "Navarai (Summer)", crops: "Black Gram, Green Gram, Cotton, Gingelly", eq: "Seed Drills, Light Tractors", water: "Low (Stored Moisture)" },
+                { season: "Navarai (Summer)", crops: "Sesame, Fodder Sorghum, Summer Vegetables", eq: "Rotavator, Boom Sprayers", water: "Low to Medium" },
+                { season: "Pre-Kuruvai", crops: "Green Manure (Daincha), Summer Millets", eq: "Ploughing Machinery", water: "Low" },
+                { season: "Pre-Kuruvai", crops: "Land Preparation for Paddy, Early Sugarcane", eq: "Heavy Tractors, Laser Levelers", water: "Medium" },
+                { season: "Kuruvai (Kharif)", crops: "Short-duration Paddy, Banana", eq: "Paddy Transplanters, Puddlers", water: "High (Canal Opening)" },
+                { season: "Kuruvai (Kharif)", crops: "Paddy Maintenance, Sugarcane", eq: "Power Weeders, Drone Sprayers", water: "High" },
+                { season: "Kuruvai (Kharif)", crops: "Paddy Harvesting, Late Kharif Cotton", eq: "Combine Harvesters, Balers", water: "Medium" },
+                { season: "Samba Prep", crops: "Samba Nursery Prep, Maize, Turmeric", eq: "Nursery Seeders, Puddlers", water: "Medium" },
+                { season: "Samba (Rabi)", crops: "Long-duration Paddy, Groundnut", eq: "Transplanters", water: "High (Monsoon)" },
+                { season: "Samba (Rabi)", crops: "Paddy Maintenance, Black Gram", eq: "Drone Sprayers", water: "High" },
+                { season: "Samba / Thaladi", crops: "Late Paddy, Cotton (Rainfed)", eq: "Weeders", water: "Medium" },
+                { season: "Samba Harvest", crops: "Paddy Harvesting, Pulses Sowing", eq: "Heavy Harvesters", water: "Low" }
+            ]
+        },
+        western: {
+            districts: ["Coimbatore", "Tiruppur", "Erode", "Salem", "Namakkal", "Dharmapuri", "Krishnagiri"],
+            name: "WESTERN AGRO ZONE",
+            months: [
+                { season: "Rabi Late", crops: "Bengal Gram, Sunflower, Fodder Cholam", eq: "Harvesters, Threshers", water: "Low" },
+                { season: "Zaid Prep", crops: "Onion, Tomato, Irrigated Groundnut", eq: "Rotavators, Drip Systems", water: "Medium" },
+                { season: "Zaid (Summer)", crops: "Tapioca, Turmeric (Planting), Sesame", eq: "Bed Makers, Planters", water: "Medium" },
+                { season: "Zaid (Summer)", crops: "Summer Vegetables, Fodder Sorghum", eq: "Sprayers", water: "Low to Medium" },
+                { season: "Pre-Kharif", crops: "Maize, Cotton, Groundnut", eq: "Pneumatic Seeders, Tractors", water: "Medium" },
+                { season: "Kharif", crops: "Sorghum, Sugarcane, Turmeric", eq: "Power Weeders, Inter-cultivators", water: "Medium" },
+                { season: "Kharif", crops: "Maize (Tasseling), Cotton (Flowering)", eq: "Drone Sprayers", water: "Medium" },
+                { season: "Kharif Harvest", crops: "Maize Harvest, Early Groundnut Harvest", eq: "Combine Harvesters, Diggers", water: "Low" },
+                { season: "Rabi", crops: "Rainfed Maize, Cowpea, Coriander", eq: "Seed Drills", water: "Dependent on Rain" },
+                { season: "Rabi", crops: "Sunflower, Chickpea, Minor Millets", eq: "Tractors", water: "Low" },
+                { season: "Rabi", crops: "Winter Vegetables, Cotton (Late)", eq: "Sprayers", water: "Medium" },
+                { season: "Rabi Harvest", crops: "Maize, Sorghum Harvesting", eq: "Harvesters, Reapers", water: "Low" }
+            ]
+        },
+        southern: {
+            districts: ["Madurai", "Sivaganga", "Ramanathapuram", "Tirunelveli", "Thoothukudi", "Virudhunagar", "Tenkasi", "Dindigul", "Theni"],
+            name: "SOUTHERN RAINFED ZONE",
+            months: [
+                { season: "Rabi Harvest", crops: "Tank-fed Paddy, Pulses, Coriander", eq: "Paddy Harvesters, Threshers", water: "Low" },
+                { season: "Summer Prep", crops: "Sesame, Minor Millets", eq: "Dryland Plough, Cultivators", water: "Very Low" },
+                { season: "Summer", crops: "Summer Cotton, Gourds, Chillies", eq: "Drip Irrigation Setup", water: "Medium" },
+                { season: "Summer", crops: "Fodder Crops, Vegetables (Irrigated)", eq: "Sprayers", water: "Low" },
+                { season: "Kharif Early", crops: "Rainfed Cotton, Millets, Maize", eq: "Seed Drills, Deep Ploughs", water: "Dependent on Rain" },
+                { season: "Kharif", crops: "Chillies (Transplanting), Sorghum", eq: "Transplanters, Weeders", water: "Medium" },
+                { season: "Kharif", crops: "Cotton Maintenance, Pearl Millet", eq: "Drone Sprayers", water: "Medium" },
+                { season: "Kharif Harvest", crops: "Millets Harvest, Maize Harvest", eq: "Reapers, Harvesters", water: "Low" },
+                { season: "Rabi Sowing", crops: "Paddy (Tank Irrigated), Bengal Gram", eq: "Tractors, Puddlers", water: "High" },
+                { season: "Rabi", crops: "Coriander, Chillies, Rainfed Pulses", eq: "Weeders", water: "Medium" },
+                { season: "Rabi", crops: "Paddy (Booting Stage), Cotton", eq: "Fertilizer Spreaders", water: "High" },
+                { season: "Rabi Late", crops: "Paddy (Maturation), Pulse Harvesting", eq: "Harvesters", water: "Medium" }
+            ]
+        },
+        northern: {
+            districts: ["Chennai", "Kanchipuram", "Chengalpattu", "Tiruvallur", "Vellore", "Tirupathur", "Ranipet", "Tiruvannamalai", "Viluppuram", "Kallakurichi", "Perambalur"],
+            name: "NORTHERN INLAND ZONE",
+            months: [
+                { season: "Navarai (Summer)", crops: "Navarai Paddy, Groundnut, Black Gram", eq: "Transplanters, Seed Drills", water: "High" },
+                { season: "Navarai", crops: "Watermelon, Brinjal, Bhendi", eq: "Drip Systems, Sprayers", water: "Medium" },
+                { season: "Summer", crops: "Irrigated Groundnut, Vegetables", eq: "Weeders", water: "Medium" },
+                { season: "Summer Harvest", crops: "Navarai Paddy, Groundnut Digging", eq: "Harvesters, Groundnut Diggers", water: "Low" },
+                { season: "Sornavari (Kharif)", crops: "Sornavari Paddy, Sugarcane", eq: "Puddlers, Transplanters", water: "High" },
+                { season: "Sornavari", crops: "Paddy Maintenance, Millets", eq: "Power Weeders", water: "Medium" },
+                { season: "Sornavari", crops: "Groundnut (Rainfed), Pulses", eq: "Seed Drills", water: "Medium" },
+                { season: "Samba Prep", crops: "Sornavari Harvest, Samba Nursery", eq: "Harvesters, Tractors", water: "High" },
+                { season: "Samba (Rabi)", crops: "Main Samba Paddy, Black Gram", eq: "Transplanters", water: "High (Monsoon)" },
+                { season: "Samba", crops: "Paddy Maintenance, Winter Vegetables", eq: "Drone Sprayers", water: "High" },
+                { season: "Samba", crops: "Sugarcane Harvest Begins", eq: "Sugarcane Harvesters", water: "Medium" },
+                { season: "Samba Harvest", crops: "Paddy Harvest, Pulse Sowing", eq: "Combine Harvesters", water: "Low" }
+            ]
+        },
+        hilly: {
+            districts: ["Nilgiris", "Kanyakumari"],
+            name: "HIGH ALTITUDE ZONE",
+            months: [
+                { season: "Winter", crops: "Winter Potato, Garlic, Cabbage", eq: "Mini-Tractors, Potato Planters", water: "Medium" },
+                { season: "Winter Late", crops: "Carrot, Hill Spices", eq: "Weeders", water: "Medium" },
+                { season: "Spring", crops: "Beans, Radish, Peaches, Plums", eq: "Pruning Tools", water: "Low" },
+                { season: "Spring Late", crops: "Tea/Coffee Maintenance", eq: "Brush Cutters", water: "Medium" },
+                { season: "Monsoon Prep", crops: "Potato (Main Crop), Cabbage", eq: "Planters", water: "Medium" },
+                { season: "Monsoon", crops: "Tea (Plucking), Pepper", eq: "Mechanical Pluckers", water: "High (Rain)" },
+                { season: "Monsoon", crops: "Coffee (Berry Expansion)", eq: "Sprayers (Fungicide)", water: "High" },
+                { season: "Monsoon Late", crops: "Mandarin Orange, Spices", eq: "Weeders", water: "High" },
+                { season: "Autumn", crops: "Potato Harvesting, Carrot", eq: "Potato Diggers", water: "Medium" },
+                { season: "Autumn Late", crops: "Coffee Harvesting Begins", eq: "Processing Machinery", water: "Low" },
+                { season: "Winter Prep", crops: "Garlic, Winter Cabbage", eq: "Mini-Rotavators", water: "Medium" },
+                { season: "Winter", crops: "Tea Pruning, Spices Harvest", eq: "Pruning Saws", water: "Low" }
+            ]
+        }
+    };
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const currentMonthIndex = new Date().getMonth(); // 0-11
+
+    function renderMatrix() {
+        const selectedDistrict = document.getElementById("districtSelect").value;
+        const grid = document.getElementById("matrixGrid");
+        grid.innerHTML = ""; // Clear existing
+
+        // 1. Find correct zone
+        let activeZoneKey = "northern"; 
+        for (const [key, zoneData] of Object.entries(agroZones)) {
+            if (zoneData.districts.includes(selectedDistrict)) {
+                activeZoneKey = key;
+                break;
+            }
+        }
+
+        const zone = agroZones[activeZoneKey];
+        document.getElementById("zoneDisplay").textContent = zone.name;
+
+        // 2. Generate 12 Month Cards
+        zone.months.forEach((data, index) => {
+            const isCurrentMonth = (index === currentMonthIndex);
+            
+            const card = document.createElement("div");
+            card.className = `card month-card ${isCurrentMonth ? 'current-month-active' : ''}`;
+            card.style.border = "1px solid var(--border-light)";
+            card.style.borderRadius = "12px";
+            card.style.padding = "24px";
+            card.style.background = "var(--bg-surface)";
+            
+            // Add targeting icon to current month
+            const targetIcon = isCurrentMonth 
+                ? `<i class="fas fa-crosshairs" style="color: var(--primary);"></i>` 
+                : `<i class="far fa-calendar" style="color: var(--text-muted);"></i>`;
+
+            card.innerHTML = `
+                <h3 class="month-title">
+                    <span>${monthNames[index]} <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">/ 2026</span></span>
+                    ${targetIcon}
+                </h3>
+                
+                <div class="data-row">
+                    <span class="data-label">Farming Phase</span> 
+                    <span class="highlight-value">${data.season}</span>
+                </div>
+                <div class="data-row" style="min-height: 48px;">
+                    <span class="data-label">Recommended Crops</span> 
+                    <span class="data-value">${data.crops}</span>
+                </div>
+                <div class="data-row" style="min-height: 48px;">
+                    <span class="data-label">Hardware Requirements</span> 
+                    <span class="data-value" style="color: var(--warning); font-weight: 500;">${data.eq}</span>
+                </div>
+                <div class="data-row" style="margin-top: 12px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+                    <span class="data-label">Water/Irrigation Status</span> 
+                    <span class="data-value">${data.water}</span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Initialize on load
+    document.addEventListener("DOMContentLoaded", () => {
+        renderMatrix();
+        
+        // Auto-scroll to the current month after a slight delay
+        setTimeout(() => {
+            const currentCard = document.querySelector('.current-month-active');
+            if(currentCard) {
+                currentCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 500);
+    });
+</script>
+{% endblock %}

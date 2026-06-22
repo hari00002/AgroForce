@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="auth-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="card auth-card" style="width: 100%; max-width: 450px; border-top: 3px solid var(--neon-primary); box-shadow: 0 0 30px rgba(0, 250, 154, 0.1);">
+        <h2 style="font-family: 'Orbitron', sans-serif; text-align: center; margin-bottom: 25px; color: var(--text-main);">
+            <i class="fas fa-user-plus" style="color: var(--neon-primary);"></i> Initialize Identity
+        </h2>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label><i class="fas fa-id-badge"></i> Username</label>
+                <input type="text" name="username" required placeholder="Choose a username" style="font-family: 'Share Tech Mono', monospace;">
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" name="email" required placeholder="Enter your email" style="font-family: 'Share Tech Mono', monospace;">
+            </div>
+
+            <div class="form-group">
+                <label><i class="fas fa-phone-alt"></i> Comm-Link (Contact No.)</label>
+                <input type="tel" name="contact_info" required placeholder="Enter 10-digit number" pattern="[0-9]{10}" style="font-family: 'Share Tech Mono', monospace;">
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Security Key (Password)</label>
+                <input type="password" name="password" required placeholder="Create password">
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-network-wired"></i> Network Role</label>
+                <select name="role" style="font-family: 'Share Tech Mono', monospace; cursor: pointer;">
+                    <option value="farmer">Agri-Node (Rent Equipment)</option>
+                    <option value="owner">Fleet Commander (List Equipment)</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-primary full-width" style="margin-top: 10px; padding: 15px; font-size: 1.1rem;">
+                Establish Connection
+            </button>
+        </form>
+        
+        <p class="auth-footer" style="text-align: center; margin-top: 20px; color: #333333; font-size: 16px;">
+            Already have an active link? <a href="{{ url_for('login') }}" style="color:blue; text-decoration: none; font-weight: bold; font-size:20px;">Login</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
